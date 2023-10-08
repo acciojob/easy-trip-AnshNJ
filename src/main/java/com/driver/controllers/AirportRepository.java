@@ -67,9 +67,9 @@ public class AirportRepository {
         if(flightBookings.containsKey(flightId) && flightBookings.get(flightId).size() == maxCapacity) return "FAILURE"; //Max CAP reached
 
         //Passenger has already booked a flight
-        for(List<Integer> passengerList : flightBookings.values()){
-            if(passengerList.contains(passengerId)) return "FAILURE";
-        }
+        List<Integer> passengerList = flightBookings.get(flightId);
+        if(passengerList.contains(passengerId)) return "FAILURE";
+
         //Update payment and flightrevenue maps
         int fare = calculateFare(flightId);
         paymentMap.put(passengerId , fare);
@@ -77,7 +77,6 @@ public class AirportRepository {
         flightRevenueMap.put(flightId , fare);
 
         //Passenger is free to book a flight
-        List<Integer> passengerList = flightBookings.getOrDefault(flightId , new ArrayList<>());
         passengerList.add(passengerId);
         flightBookings.put(flightId , passengerList);
         return "SUCCESS";
@@ -137,14 +136,22 @@ public class AirportRepository {
     }
 
     public int getNumberOfPeople(Date date, String airportName) {
-        City currCity = airportMap.get(airportName).getCity();
-        int numberOfPeople = 0;
-        for(Flight currFlight : flightMap.values()){
-            if((currFlight.getToCity() == currCity || currFlight.getFromCity() == currCity) && currFlight.getFlightDate() == date){
-                numberOfPeople += flightBookings.getOrDefault(currFlight , new ArrayList<>()).size();
-            }
-        }
-        return numberOfPeople;
+        Airport airport=airportMap.get(airportName);
+        int count=0;
+        if(airport!=null){
+            City city=airport.getCity();
+            for(Flight flight : flightMap.values()){
+                if(date.equals(flight.getFlightDate())){
+                    if(city.equals(flight.getToCity()) || city.equals(flight.getFromCity())){
+                        Integer flightId=flight.getFlightId();
+                        List<Integer> list=flightBookings.get(flightId);
+                        if(list!=null){
+                            count+= list.size();
+                        }
+                    }
+                }
+            }}
+        return count;
     }
 
     public int countOfBookings(Integer passengerId) {
